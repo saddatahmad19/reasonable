@@ -1,15 +1,11 @@
 import streamlit as st
-from utils import validate_markdown_file, batch_similar_tasks, optimize_context_for_task, format_single_task_result_for_export
-from agent_system import AgentSystem
-from llm_config import LLMConfig
+from src.app_logic.utils import validate_markdown_file, batch_similar_tasks, optimize_context_for_task, format_single_task_result_for_export
+from src.app_logic.agent_system import AgentSystem, AGENT_SPECIALTIES
+from src.app_logic.llm_config import LLMConfig
+from src.app_logic.ui_utils import create_sidebar_nav_v2
 
 # Sidebar navigation
-with st.sidebar:
-    st.header("Navigation")
-    st.page_link("main.py", label="🏠 Main")
-    st.page_link("pages/Chat.py", label="💬 Chat")
-    st.page_link("pages/TaskProcessor.py", label="📝 Task Processor", disabled=True)
-    st.page_link("pages/Config.py", label="⚙️ Config")
+create_sidebar_nav_v2("task_processor")
 
 st.set_page_config(page_title="Task Processor", page_icon="📝")
 st.title("📝 Task Processor")
@@ -50,12 +46,31 @@ if uploaded_files:
 
 # System prompt input
 if 'system_prompt' not in st.session_state:
-    st.session_state.system_prompt = "You are an intelligent assistant that helps users complete tasks using the provided context."
-st.header("🛠️ System Prompt (Optional)")
-st.session_state.system_prompt = st.text_area(
-    "Set a custom system prompt for this run:",
-    value=st.session_state.system_prompt,
-    height=80
+    st.session_state.selected_specialty = specialty_options[0]
+
+st.session_state.selected_specialty = st.selectbox(
+    "Choose an agent specialty:",
+    options=specialty_options,
+    index=specialty_options.index(st.session_state.selected_specialty),
+    help="Each specialty uses a tailored system prompt and set of tools."
+)
+
+# Display specialty's default system prompt (read-only)
+selected_specialty_details = AGENT_SPECIALTIES.get(st.session_state.selected_specialty, {})
+default_prompt_for_selected_specialty = selected_specialty_details.get("system_prompt", "No default prompt defined for this specialty.")
+with st.expander("View Default System Prompt for Selected Specialty", expanded=False):
+    st.caption(default_prompt_for_selected_specialty)
+
+# Custom System prompt input (optional, overrides specialty's default)
+if 'custom_system_prompt' not in st.session_state:
+    st.session_state.custom_system_prompt = "" # Default to empty, meaning use specialty's default
+
+st.header("🛠️ Custom System Prompt (Optional)")
+st.session_state.custom_system_prompt = st.text_area(
+    "Set a custom system prompt for this run (overrides specialty's default):",
+    value=st.session_state.custom_system_prompt,
+    height=100,
+    help="If you provide a custom system prompt here, it will be used INSTEAD OF the selected specialty's default prompt. Leave blank to use the specialty's default."
 )
 
 # Task input section
@@ -190,11 +205,15 @@ if st.session_state.processing and not st.session_state.stopped:
             report_name = st.session_state.task_report_names[idx]
             optimized_context = optimize_context_for_task(st.session_state.uploaded_context, task)
             # Call agent_system with system prompt
+            # Determine system_prompt: use custom if provided, otherwise None (agent_system will use specialty's default)
+            final_custom_system_prompt = st.session_state.custom_system_prompt if st.session_state.custom_system_prompt.strip() else None
+
             results = agent_system.process_tasks(
                 tasks=[task],
                 context=optimized_context,
+                specialty_name=st.session_state.selected_specialty,
                 session_id=f"task_{idx}_session",
-                system_prompt=st.session_state.system_prompt
+                custom_system_prompt=final_custom_system_prompt
             )
             st.session_state.task_results[idx] = results[0]
             st.session_state.task_statuses[idx] = 'completed'

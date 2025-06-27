@@ -95,17 +95,17 @@ class LLMFactory:
     @staticmethod
     def _create_openai(config: LLMConfig) -> BaseChatModel:
         """Create OpenAI instance - placeholder for future implementation"""
-        raise NotImplementedError("OpenAI provider not yet implemented")
+        raise ValueError("OpenAI provider is not yet implemented. Please select Azure OpenAI.")
     
     @staticmethod
     def _create_gemini(config: LLMConfig) -> BaseChatModel:
         """Create Gemini instance - placeholder for future implementation"""
-        raise NotImplementedError("Gemini provider not yet implemented")
+        raise ValueError("Gemini provider is not yet implemented. Please select Azure OpenAI.")
     
     @staticmethod
     def _create_anthropic(config: LLMConfig) -> BaseChatModel:
         """Create Anthropic instance - placeholder for future implementation"""
-        raise NotImplementedError("Anthropic provider not yet implemented")
+        raise ValueError("Anthropic provider is not yet implemented. Please select Azure OpenAI.")
 
 def get_default_config() -> Dict[str, Any]:
     """Get default configuration parameters"""
