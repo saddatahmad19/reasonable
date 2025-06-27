@@ -1,15 +1,11 @@
 import streamlit as st
-from llm_config import LLMFactory
+from src.app_logic.llm_config import LLMFactory
+from src.app_logic.ui_utils import create_sidebar_nav_v2
 
 st.set_page_config(page_title="Azure OpenAI Chat", page_icon="💬")
 
 # Sidebar navigation
-with st.sidebar:
-    st.header("Navigation")
-    st.page_link("main.py", label="🏠 Main")
-    st.page_link("pages/Chat.py", label="💬 Chat", disabled=True)
-    st.page_link("pages/Config.py", label="⚙️ Config")
-    st.page_link("pages/TaskProcessor.py", label="📝 Task Processor")
+create_sidebar_nav_v2("chat")
 
 st.title("💬 Azure OpenAI Chat")
 
@@ -34,37 +30,89 @@ chat_container = st.container()
 input_container = st.container()
 
 with chat_container:
-    st.markdown("<div style='height:400px; overflow-y:auto; background:#181c24; border-radius:8px; padding:16px; margin-bottom:8px;'>", unsafe_allow_html=True)
-    # Only show the last user message and the last assistant response
-    if len(st.session_state.chat_history) >= 1:
-        last_user_msg = next((msg for msg in reversed(st.session_state.chat_history) if msg["role"] == "user"), None)
-        if last_user_msg:
-            st.markdown(f"<div style='background:#262730; color:#fff; border-radius:6px; padding:8px 12px; margin-bottom:6px; text-align:right;'><b>You:</b> {last_user_msg['content']}</div>", unsafe_allow_html=True)
-    if len(st.session_state.chat_history) >= 2:
-        last_assistant_msg = next((msg for msg in reversed(st.session_state.chat_history) if msg["role"] == "assistant"), None)
-        if last_assistant_msg:
-            st.markdown(f"<div style='background:#31333f; color:#fff; border-radius:6px; padding:8px 12px; margin-bottom:6px; text-align:left;'><b>Assistant:</b> {last_assistant_msg['content']}</div>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+    # Custom CSS for chat messages
+    st.markdown("""
+    <style>
+        .chat-message {
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            color: #fff;
+        }
+        .user-message {
+            background-color: #262730; /* Streamlit's dark theme input background */
+            text-align: right;
+        }
+        .assistant-message {
+            background-color: #31333F; /* Slightly lighter for assistant */
+            text-align: left;
+        }
+        .message-sender {
+            font-weight: bold;
+            margin-bottom: 4px;
+            display: block;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # Chat history display area
+    # The outer div for scrolling should be managed by st.container() with height if needed,
+    # or let Streamlit handle it. For now, let's remove fixed height to see full history.
+    # st.markdown("<div style='height:400px; overflow-y:auto; background:#181c24; border-radius:8px; padding:16px; margin-bottom:8px;'>", unsafe_allow_html=True)
+
+    for message in st.session_state.chat_history:
+        if message["role"] == "user":
+            st.markdown(f"<div class='chat-message user-message'><span class='message-sender'>You:</span>{message['content']}</div>", unsafe_allow_html=True)
+        else:
+            st.markdown(f"<div class='chat-message assistant-message'><span class='message-sender'>Assistant:</span>{message['content']}</div>", unsafe_allow_html=True)
+    # st.markdown("</div>", unsafe_allow_html=True)
 
 with input_container:
     with st.form("chat_form", clear_on_submit=True):
-        user_input = st.text_area("Your message:", height=80, key="chat_input")
+        user_input = st.text_area("Your message:", height=80, key="chat_input", placeholder="Type your message here...")
         submitted = st.form_submit_button("Send", type="primary")
 
     if submitted and user_input.strip():
         # Add user message to history
         st.session_state.chat_history.append({"role": "user", "content": user_input.strip()})
-        messages = [(msg["role"], msg["content"]) for msg in st.session_state.chat_history]
+
+        # Prepare messages for LLM
+        # Langchain expects a list of BaseMessage objects or (role, content) tuples
+        # For AzureChatOpenAI, it's typically a list of HumanMessage, AIMessage, SystemMessage
+        # The current `agent_system.llm.stream` expects this format.
+        history_for_llm = []
+        for msg in st.session_state.chat_history:
+            if msg["role"] == "user":
+                history_for_llm.append(("human", msg["content"]))
+            elif msg["role"] == "assistant":
+                 history_for_llm.append(("ai", msg["content"]))
+
         llm = agent_system.llm if hasattr(agent_system, "llm") else LLMFactory.create_llm(llm_config)
-        response = ""
+
+        # Placeholder for the streaming response
+        # We need to update the UI dynamically as chunks arrive.
+        # A simple way is to rerun and redraw, but for streaming, st.empty() is better.
+        assistant_response_area = st.empty()
+        full_response = ""
+
         with st.spinner("Thinking..."):
             try:
-                for chunk in llm.stream(messages):
-                    response += chunk.content
-                    st.markdown(f"<div style='background:#31333f; color:#fff; border-radius:6px; padding:8px 12px; margin-bottom:6px; text-align:left;'><b>Assistant:</b> {response}▌</div>", unsafe_allow_html=True)
+                for chunk in llm.stream(history_for_llm): # Pass the formatted history
+                    full_response += chunk.content
+                    # Update the placeholder with the latest response
+                    assistant_response_area.markdown(
+                        f"<div class='chat-message assistant-message'><span class='message-sender'>Assistant:</span>{full_response}▌</div>",
+                        unsafe_allow_html=True
+                    )
             except Exception as e:
                 st.error(f"Error: {e}")
-        st.session_state.chat_history.append({"role": "assistant", "content": response})
+
+        # Once streaming is complete, add the full response to history
+        if full_response: # Ensure we don't add empty responses if an error occurred early
+            st.session_state.chat_history.append({"role": "assistant", "content": full_response})
+
+        # Clear the temporary streaming area and rerun to draw the final message from history
+        assistant_response_area.empty()
         st.rerun()
 
 # Option to clear chat

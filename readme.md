@@ -14,9 +14,10 @@ A comprehensive Streamlit application that uses LangChain framework to perform a
 
 - 📁 **File Upload**: Accept only Markdown (`.md`) files as context/knowledge base
 - 📝 **Task Input**: Single task or bulk task processing
-- 🤖 **Agentic Reasoning**: LangChain agent with memory, tool usage, and multi-step reasoning
-- 🔧 **LLM API Selection**: Currently supports Azure OpenAI (with framework for other providers)
-- 🚀 **Batch Optimization**: Automatically groups similar tasks for efficient processing
+- 🤖 **Agentic Reasoning**: LangChain agent with memory, tool usage, and multi-step reasoning.
+- ✨ **Agent Specialization**: Choose from different agent types (e.g., General Analyst, Documentation Expert, Creative Writer, Python Code Assistant) each with tailored system prompts and tools.
+- 🔧 **LLM API Selection**: Currently supports Azure OpenAI (with framework for other providers).
+- 🚀 **Batch Optimization**: Automatically groups similar tasks for efficient processing.
 - 📊 **Results Dashboard**: Comprehensive results display with confidence scores and metadata
 - 💾 **Export Functionality**: Export results in markdown format
 
@@ -120,9 +121,10 @@ You can edit this file manually or use the sidebar in the app to update your con
 
 ### 3. Input Tasks
 
-- Choose between single task or bulk input
-- For bulk input, enter one task per line
-- Enable batch optimization for similar tasks
+- **Select Agent Specialty**: Choose the desired agent type from the dropdown (e.g., "General Analyst", "Documentation Expert"). Each specialty is optimized for different kinds of tasks.
+- **(Optional) Custom System Prompt**: You can provide a custom system prompt that will override the selected specialty's default prompt.
+- **Define Tasks**: Enter tasks one by one or add multiple task boxes.
+- Provide a report filename for each task if desired.
 
 ### 4. Process and Review
 
@@ -161,13 +163,35 @@ Tasks are rated as:
 
 ```
 langchain-task-processor/
-├── main.py                 # Main Streamlit application
-├── llm_config.py          # LLM configuration and factory
-├── agent_system.py        # LangChain agent implementation
-├── utils.py               # Utility functions
-├── requirements.txt       # Python dependencies
-└── README.md             # This file
+├── main.py                     # Main Streamlit application entry point
+├── pages/                      # Streamlit pages
+│   ├── Chat.py                 # Chat interface page
+│   ├── Config.py               # LLM Configuration page
+│   └── TaskProcessor.py        # Task processing interface page
+├── src/
+│   └── app_logic/              # Core application logic
+│       ├── agent_system.py     # LangChain agent implementation, specialty definitions
+│       ├── llm_config.py       # LLM configuration and factory
+│       ├── ui_utils.py         # Streamlit UI utility functions (e.g., sidebar)
+│       └── utils.py            # General utility functions
+├── assets/
+│   └── styles.css              # Custom CSS styles
+├── llm_config.json             # Stores LLM configuration (created after first config)
+├── requirements.txt            # Python dependencies
+└── README.md                   # This file
 ```
+
+## Agent Specialization
+
+The Task Processor now allows you to select an **Agent Specialty**. Each specialty is configured with a specific system prompt and a set of tools tailored for its purpose. This allows for more targeted and effective task processing.
+
+Current specialties include:
+-   **General Analyst**: A versatile agent for general-purpose analysis and reasoning using all available tools.
+-   **Documentation Expert**: Focused on accurately retrieving and citing information from provided documents.
+-   **Creative Writer**: Geared towards generating creative content, brainstorming, and rephrasing text.
+-   **Python Code Assistant**: Helps with writing, explaining, and debugging Python code (uses a mock execution tool for safety).
+
+You can also provide a **Custom System Prompt** on the Task Processor page, which will override the default system prompt of the selected specialty, while still utilizing the specialty's assigned tools.
 
 ## Future Enhancements
 

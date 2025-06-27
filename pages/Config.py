@@ -1,13 +1,9 @@
 import streamlit as st
-from utils import load_llm_config_from_json, save_llm_config_to_json
+from src.app_logic.utils import load_llm_config_from_json, save_llm_config_to_json
+from src.app_logic.ui_utils import create_sidebar_nav_v2
 
 # Sidebar navigation
-with st.sidebar:
-    st.header("Navigation")
-    st.page_link("main.py", label="🏠 Main")
-    st.page_link("pages/Chat.py", label="💬 Chat")
-    st.page_link("pages/Config.py", label="⚙️ Config", disabled=True)
-    st.page_link("pages/TaskProcessor.py", label="📝 Task Processor")
+create_sidebar_nav_v2("config")
 
 st.set_page_config(page_title="LLM Configuration", page_icon="⚙️")
 st.title("⚙️ LLM Configuration")

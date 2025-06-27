@@ -1,0 +1,88 @@
+/* General body styling */
+body {
+    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #333; /* Default text color for light mode, adjust if needed */
+}
+
+/* Improve Streamlit's default button styling slightly */
+.stButton>button {
+    border-radius: 20px; /* More rounded buttons */
+    border: 1px solid #007bff; /* Primary color border */
+    padding: 8px 16px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.stButton>button:hover {
+    background-color: #0056b3;
+    color: white;
+}
+
+/* Styling for headers */
+h1, h2, h3 {
+    color: #0056b3; /* A consistent header color */
+}
+
+/* Custom class for cards or containers if we decide to use them */
+.custom-container {
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #f9f9f9; /* Light background for containers */
+    margin-bottom: 16px;
+}
+
+/* Style for expanders to make them a bit more distinct */
+.stExpander {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.stExpander header {
+    background-color: #f0f2f6; /* Light grey background for expander header */
+    padding: 10px 15px !important; /* Override default padding if necessary */
+    border-bottom: 1px solid #ddd;
+}
+
+/* Style for text inputs and text areas */
+.stTextInput input, .stTextArea textarea {
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+
+.stTextInput input:focus, .stTextArea textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+/* Sidebar specific styling */
+div[data-testid="stSidebarUserContent"] {
+  padding-top: 1rem; /* Add some padding to the top of sidebar content */
+}
+
+div[data-testid="stSidebarNavItems"] ul {
+  padding-left: 10px; /* Adjust padding for nav items */
+}
+
+div[data-testid="stSidebarNavItems"] a { /* Nav links */
+  padding: 0.5rem 0.75rem !important;
+  border-radius: 5px;
+}
+
+div[data-testid="stSidebarNavItems"] a:hover,
+div[data-testid="stSidebarNavItems"] a:focus {
+  background-color: #e9ecef; /* Light hover for nav items */
+  color: #0056b3;
+}
+
+/* For disabled links, ensure they look distinct */
+div[data-testid="stSidebarNavItems"] a[aria-disabled="true"] {
+  color: #6c757d; /* Muted color for disabled links */
+  background-color: transparent !important;
+  cursor: not-allowed;
+}
+
+/* Chat page specific CSS was moved to pages/Chat.py using st.markdown for component-local CSS.
+   This file is for global styles.
+*/
