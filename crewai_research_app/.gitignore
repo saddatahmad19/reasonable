@@ -1,0 +1,29 @@
+# Environment variables
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+.venv/
+
+# IDE and editor specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+temp_uploads/
+*.tmp
+
+# Firebase service account key (if accidentally committed, though it should be in .env)
+firebase-service-account-key.json
+
+# OS specific files
+.DS_Store
+Thumbs.db

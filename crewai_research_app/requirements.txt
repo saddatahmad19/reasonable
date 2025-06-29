@@ -1,0 +1,7 @@
+streamlit
+crewai
+firebase-admin
+google-generativeai
+python-dotenv
+gitignore_parser
+pytest
